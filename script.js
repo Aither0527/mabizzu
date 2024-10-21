@@ -4,6 +4,7 @@ let apiKey = "";
 let oldServerName = "";
 let oldChannelNum = 0;
 let oldApiKey = "";
+let oldNextUpdate = "";
 
 const npcInfo = [
   { npc: "델", location: "이멘 마하" },
@@ -70,6 +71,11 @@ made by https://github.com/Aither0527`);
     const api = this.value;
     localStorage.setItem("apiKey", api);
   });
+
+  oldNextUpdate = localStorage.getItem("nextUpdate");
+  if (oldNextUpdate) {
+    nextUpdate = oldNextUpdate;
+  }
 };
 
 //api 호출
@@ -99,6 +105,9 @@ async function searchItems() {
       }
       const data = await response.json();
       nextUpdate = data.date_shop_next_update;
+      if (oldNextUpdate != nextUpdate) {
+        localStorage.setItem("nextUpdate", nextUpdate);
+      }
       const pouchShop = data.shop.filter((shop) => shop.tab_name === "주머니");
       const categorizedPouch = {
         npc,
