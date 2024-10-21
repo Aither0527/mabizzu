@@ -3,7 +3,7 @@ body {
   margin: 0px;
   padding: 0px;
 }
-::selection{
+::selection {
   background: #4174b3;
   color: #ffffff;
 }
@@ -45,6 +45,10 @@ button {
   color: white;
   border: none;
   border-radius: 5px;
+  cursor: pointer;
+}
+button.active {
+  background-color: #6193cf;
 }
 label {
   font-weight: 600;
@@ -89,7 +93,7 @@ label {
   display: flex;
   align-items: center;
   font-size: 1rem;
-  label{
+  label {
     margin-left: 20px;
     margin-right: 10px;
   }
@@ -112,6 +116,16 @@ label {
 }
 .label_text {
   margin-right: 10px;
+}
+.notice_wrap {
+  margin-left: 20px;
+}
+.notice_text {
+  font-size: 0.8rem;
+  color: #6d6d6d;
+}
+.category_wrap {
+  margin: 20px;
 }
 .shop_wrap {
   display: flex;
@@ -163,4 +177,3 @@ label {
   padding: 10px 10px 10px 10px;
   font-size: 1.2rem;
 }
-

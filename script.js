@@ -29,12 +29,28 @@ const npcInfo = [
   { npc: "피오나트", location: "" },
 ];
 
+const categoryMap = {
+  "음식 주머니": ["달걀", "감자", "옥수수", "밀", "보리"],
+  "양털 주머니": ["양털"],
+  "거미줄/실뭉치 주머니": ["거미줄", "실뭉치"],
+  "가죽 주머니": ["가죽"],
+  "옷감 주머니": ["옷감"],
+  "실크 주머니": ["실크"],
+  "꽃바구니": ["꽃바구니"],
+};
+let currentCategory = "전체";
+
 let nextUpdate = "";
 let getError = false;
-let pouchList = [];
+let errorMsg = "";
+let pouchList = []; //response 리스트
 let updateInterval;
+let buttonUpdateInterval;
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const categoryButtons = document.querySelectorAll(".category_wrap button");
+
+//onload
 window.onload = function () {
   console.log(`                 _     _               
                 | |   (_)              
@@ -56,6 +72,7 @@ made by https://github.com/Aither0527`);
   });
 };
 
+//api 호출
 async function searchItems() {
   const apiUrl = new URL("https://open.api.nexon.com/mabinogi/v1/npcshop/list");
   pouchList = []; //초기화
@@ -83,20 +100,43 @@ async function searchItems() {
       const data = await response.json();
       nextUpdate = data.date_shop_next_update;
       const pouchShop = data.shop.filter((shop) => shop.tab_name === "주머니");
-      pouchList.push({
+      const categorizedPouch = {
         npc,
         location,
-        shopList: pouchShop.flatMap((obj) => obj.item),
-      });
+        categories: {},
+      };
+
+      //카테고리별로 묶기
+      pouchShop
+        .flatMap((obj) => obj.item)
+        .forEach((item) => {
+          for (const [category, keywords] of Object.entries(categoryMap)) {
+            if (
+              keywords.some((keyword) =>
+                item.item_display_name.includes(keyword)
+              )
+            ) {
+              if (!categorizedPouch.categories[category]) {
+                categorizedPouch.categories[category] = [];
+              }
+              categorizedPouch.categories[category].push(item);
+              break;
+            }
+          }
+        });
+
+      pouchList.push(categorizedPouch);
       getError = false;
     } catch (error) {
       console.log("Error : " + error);
       getError = true;
+      errorMsg = error.message;
     }
   }
 }
 
-function updateDisplay(category = "total") {
+//화면 업데이트
+function updateDisplay() {
   const outerColor = document.getElementById("outer-color").value;
   const textColor = document.getElementById("text-color").value;
   const innerColor = document.getElementById("inner-color").value;
@@ -107,100 +147,174 @@ function updateDisplay(category = "total") {
   const textChecked = document.getElementById("text-check-box").checked;
   const innerChecked = document.getElementById("inner-check-box").checked;
   const shopItemsContainer = document.getElementById("shop_items");
+
   shopItemsContainer.innerHTML = ""; //innerHTML 초기화
-  let displayList;
 
-  switch (category) {
-    case "total":
-      displayList = pouchList;
-      break;
-    default:
-      displayList = pouchList;
-  }
+  pouchList.forEach((item) => {
+    const categoryItems =
+      currentCategory === "전체"
+        ? Object.values(item.categories).flat()
+        : item.categories[currentCategory] || [];
 
-  displayList.map((item) => {
-    if (item.shopList.length != 0) {
+    const filteredItems = categoryItems.filter((i) => {
+      let decodeUrl = decodeURIComponent(i.image_url).split("item_color=")[1];
+      const colorData = JSON.parse(decodeUrl);
+      const colors = [
+        {
+          name: "겉감",
+          hex: colorData.color_01,
+          rgb: hexToRgb(colorData.color_01),
+          filter: outerColor,
+          checked: outerChecked,
+          errorRange: outerErrorRange,
+        },
+        {
+          name: "글자",
+          hex: colorData.color_02,
+          rgb: hexToRgb(colorData.color_02),
+          filter: textColor,
+          checked: textChecked,
+          errorRange: textErrorRange,
+        },
+        {
+          name: "안감",
+          hex: colorData.color_03,
+          rgb: hexToRgb(colorData.color_03),
+          filter: innerColor,
+          checked: innerChecked,
+          errorRange: innerErrorRange,
+        },
+      ];
+      return colors.every(
+        (color) =>
+          !color.checked ||
+          colorMatch(color.filter, color.rgb, parseInt(color.errorRange))
+      );
+    });
+
+    if (filteredItems.length > 0) {
       const npcInfo = document.createElement("div");
       npcInfo.className = "npc_info";
       npcInfo.innerHTML = `
         <div class="item_location">${item.location} (${item.npc})</div>
         <div class="shop_wrap">
-        ${item.shopList
-          .map((i) => {
-            // if (i.item_display_name) {
-            let decodeUrl = decodeURIComponent(i.image_url).split(
-              "item_color="
-            )[1];
-            const colorData = JSON.parse(decodeUrl);
-            const colors = [
-              {
-                name: "겉감",
-                hex: colorData.color_01,
-                rgb: hexToRgb(colorData.color_01),
-                filter: outerColor,
-                checked: outerChecked,
-                errorRange: outerErrorRange,
-              },
-              {
-                name: "글자",
-                hex: colorData.color_02,
-                rgb: hexToRgb(colorData.color_02),
-                filter: textColor,
-                checked: textChecked,
-                errorRange: textErrorRange,
-              },
-              {
-                name: "안감",
-                hex: colorData.color_03,
-                rgb: hexToRgb(colorData.color_03),
-                filter: innerColor,
-                checked: innerChecked,
-                errorRange: innerErrorRange,
-              },
-            ];
-            const shouldDisplay = colors.every(
-              (color) =>
-                !color.checked ||
-                colorMatch(color.filter, color.rgb, parseInt(color.errorRange))
-            );
-
-            //필터링 한 경우
-            if (shouldDisplay) {
-              return `
-                <div class="shop_item">
-                  <div>
-                    <img src="${i.image_url}" alt="${i.item_display_name}">
-                    <div class="item_name">${i.item_display_name}</div>
-                    ${colors
-                      .map(
-                        (color) => `
-                      <div class="item_text_wrap">
-                        <div style="color:${color.hex}">${color.name}</div>
-                        <div style="width: 15px; height: 15px; background-color: ${color.hex}"></div>
-                        <div>(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})</div>
-                      </div>
-                    `
-                      )
-                      .join("")}
-                  </div>
+          ${filteredItems
+            .map(
+              (i) => `
+              <div class="shop_item">
+                <div>
+                  <img src="${i.image_url}" alt="${i.item_display_name}">
+                  <div class="item_name">${i.item_display_name}</div>
+                  ${[
+                    {
+                      name: "겉감",
+                      hex: JSON.parse(
+                        decodeURIComponent(i.image_url).split("item_color=")[1]
+                      ).color_01,
+                    },
+                    {
+                      name: "글자",
+                      hex: JSON.parse(
+                        decodeURIComponent(i.image_url).split("item_color=")[1]
+                      ).color_02,
+                    },
+                    {
+                      name: "안감",
+                      hex: JSON.parse(
+                        decodeURIComponent(i.image_url).split("item_color=")[1]
+                      ).color_03,
+                    },
+                  ]
+                    .map(
+                      (color) => `
+                    <div class="item_text_wrap">
+                      <div style="color:${color.hex}">${color.name}</div>
+                      <div style="width: 15px; height: 15px; background-color: ${
+                        color.hex
+                      }"></div>
+                      <div>(${hexToRgb(color.hex).r}, ${
+                        hexToRgb(color.hex).g
+                      }, ${hexToRgb(color.hex).b})</div>
+                    </div>
+                  `
+                    )
+                    .join("")}
                 </div>
-            `;
-            }
-            // }
-            // return "";
-          })
-          .join("")}
+              </div>
+            `
+            )
+            .join("")}
         </div>
       `;
-
       shopItemsContainer.appendChild(npcInfo);
     }
   });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+//카테고리 버튼 선택
+function handleCategoryButtons() {
+  categoryButtons.forEach((button) => {
+    button.addEventListener("click", function () {
+      categoryButtons.forEach((btn) => btn.classList.remove("active"));
+      this.classList.add("active");
+      currentCategory = this.textContent;
+      updateDisplay();
+    });
+  });
+}
+
+//검색 불가 상태 체크
+function canSearch() {
+  if (!nextUpdate) return true;
+
+  const now = new Date();
+  const nextUpdateDate = new Date(nextUpdate);
+  const timeDiff = nextUpdateDate.getTime() - now.getTime();
+  const minutesDiff = timeDiff / (1000 * 60);
+
+  return minutesDiff >= 5;
+}
+
+//버튼 상태 업데이트
+function updateButtonState() {
   const searchBtn = document.getElementById("search-button");
+  const now = new Date();
+  const nextUpdateDate = new Date(nextUpdate);
+  const timeDiff = Math.max(0, nextUpdateDate.getTime() - now.getTime());
+  const minutesDiff = Math.floor(timeDiff / (1000 * 60));
+  const secondsDiff = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+  if (!canSearch()) {
+    searchBtn.disabled = true;
+    searchBtn.textContent = `${minutesDiff}:${secondsDiff
+      .toString()
+      .padStart(2, "0")}`;
+  } else {
+    searchBtn.disabled = false;
+    searchBtn.textContent = "검색";
+    //버튼 인터벌 정지
+    if (buttonUpdateInterval) {
+      clearInterval(buttonUpdateInterval);
+      buttonUpdateInterval = null;
+    }
+  }
+}
+
+//DomContentLoaded
+document.addEventListener("DOMContentLoaded", () => {
+  handleCategoryButtons();
+  const searchBtn = document.getElementById("search-button");
+
+  //버튼 인터벌 확인
+  if (buttonUpdateInterval) {
+    clearInterval(buttonUpdateInterval);
+  }
+  buttonUpdateInterval = setInterval(updateButtonState, 1000);
+
   searchBtn.addEventListener("click", async () => {
+    if (!canSearch()) {
+      return;
+    }
     serverName = document.getElementById("server-name").value;
     channelNum = document.getElementById("channel-num").value;
     apiKey = document.getElementById("api-key").value;
@@ -228,6 +342,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       updateDisplay();
 
+      updateButtonState();
+
       updateInterval = setInterval(toUpdateTime, 1000);
       oldServerName = serverName;
       oldChannelNum = channelNum;
@@ -241,15 +357,6 @@ document.addEventListener("DOMContentLoaded", () => {
       //검색 버튼 활성화
       searchBtn.disabled = false;
       searchBtn.textContent = "검색";
-    }
-  });
-
-  //카테고리 버튼
-  const categories = ["total"];
-  categories.forEach((category) => {
-    const button = document.getElementById(`${category}-button`);
-    if (button) {
-      button.addEventListener("click", () => updateDisplay(category));
     }
   });
 
@@ -402,16 +509,31 @@ document.addEventListener("DOMContentLoaded", () => {
 function toUpdateTime() {
   const currentTime = new Date().getTime();
   const timeLeft = new Date(nextUpdate).getTime() - currentTime;
+  const nextUpdateKR = new Date(
+    new Date(nextUpdate).getTime() + 9 * 60 * 60 * 1000
+  );
+  const hours = nextUpdateKR.getUTCHours();
+  const ampm = hours < 12 ? "오전" : "오후";
+  const formattedHours = (hours % 12 || 12).toString().padStart(2, "0");
+
   if (timeLeft > 0 && getError == false) {
     const min = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
     const sec = Math.floor((timeLeft % (1000 * 60)) / 1000);
-    document.getElementById(
-      "next_update"
-    ).innerHTML = `다음 업데이트까지 ${min}분 ${sec}초`;
+    document.getElementById("next_update").innerHTML = `
+    <div>
+      다음 업데이트 : ${ampm} ${formattedHours}시 ${nextUpdateKR
+      .getUTCMinutes()
+      .toString()
+      .padStart(2, "0")}분 / 남은 시간 : ${min}분 ${sec}초
+    </div>`;
   } else if ((timeLeft <= 0 || timeLeft == undefined) && getError == false) {
     searchItems();
   } else {
-    alert("새로고침 후 다시 시도해주세요");
+    if (errorMsg.includes("wait until the data is ready")) {
+      alert("데이터 업데이트 중입니다. 잠시 후 다시 시도해주세요!");
+    } else {
+      alert("새로고침 후 다시 시도해주세요");
+    }
     clearInterval(updateInterval);
   }
 }

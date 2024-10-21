@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>마비쭈(MAB</title>
+    <title>마비쭈(MABIZZU)</title>
     <link href="mabizzu.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
@@ -27,7 +27,7 @@
           <input
             type="number"
             id="channel-num"
-            style="width: 1.5rem;"
+            style="width: 1.5rem"
             value="1"
           />
         </div>
@@ -107,11 +107,26 @@
       </div>
     </div>
 
+    <div class="notice_wrap">
+      <div class="notice_text">
+        ※ 에러 상황에서의 api 반복 호출을 막기 위해 상점 정보 변경 이후 5분간 검색이 불가능하도록 구현하였습니다. <br>
+        ※ 마비노기의 게임 데이터는 평균 10분 후 확인 가능합니다. (마비노기 공식 api 내용)
+      </div>
+    </div>
+
+    <div class="category_wrap">
+      <button class="active">전체</button>
+      <button>음식 주머니</button>
+      <button>양털 주머니</button>
+      <button>거미줄/실뭉치 주머니</button>
+      <button>가죽 주머니</button>
+      <button>옷감 주머니</button>
+      <button>실크 주머니</button>
+      <button>꽃바구니</button>
+    </div>
+
     <div class="container">
       <div id="next_update"></div>
-      <!-- <div class="button_wrap">
-        <button id="total-button">주머니</button>
-      </div> -->
       <div id="shop_items"></div>
     </div>
 
