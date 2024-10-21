@@ -58,6 +58,7 @@ made by https://github.com/Aither0527`);
 
 async function searchItems() {
   const apiUrl = new URL("https://open.api.nexon.com/mabinogi/v1/npcshop/list");
+  pouchList = []; //초기화
 
   for (const { npc, location } of npcInfo) {
     const params = new URLSearchParams({
@@ -77,7 +78,7 @@ async function searchItems() {
 
       if (!response.ok) {
         console.log("Error : " + error);
-        throw new Error(`Error status : ${response.status}`);
+        throw new Error(`Error status : ${error.message}`);
       }
       const data = await response.json();
       nextUpdate = data.date_shop_next_update;
@@ -87,7 +88,6 @@ async function searchItems() {
         location,
         shopList: pouchShop.flatMap((obj) => obj.item),
       });
-      await delay(500);
       getError = false;
     } catch (error) {
       console.log("Error : " + error);
@@ -127,50 +127,46 @@ function updateDisplay(category = "total") {
         <div class="shop_wrap">
         ${item.shopList
           .map((i) => {
-            if (i.item_display_name.includes("주머니")) {
-              let decodeUrl = decodeURIComponent(i.image_url).split(
-                "item_color="
-              )[1];
-              const colorData = JSON.parse(decodeUrl);
-              const colors = [
-                {
-                  name: "겉감",
-                  hex: colorData.color_01,
-                  rgb: hexToRgb(colorData.color_01),
-                  filter: outerColor,
-                  checked: outerChecked,
-                  errorRange: outerErrorRange,
-                },
-                {
-                  name: "글자",
-                  hex: colorData.color_02,
-                  rgb: hexToRgb(colorData.color_02),
-                  filter: textColor,
-                  checked: textChecked,
-                  errorRange: textErrorRange,
-                },
-                {
-                  name: "안감",
-                  hex: colorData.color_03,
-                  rgb: hexToRgb(colorData.color_03),
-                  filter: innerColor,
-                  checked: innerChecked,
-                  errorRange: innerErrorRange,
-                },
-              ];
-              const shouldDisplay = colors.every(
-                (color) =>
-                  !color.checked ||
-                  colorMatch(
-                    color.filter,
-                    color.rgb,
-                    parseInt(color.errorRange)
-                  )
-              );
+            // if (i.item_display_name) {
+            let decodeUrl = decodeURIComponent(i.image_url).split(
+              "item_color="
+            )[1];
+            const colorData = JSON.parse(decodeUrl);
+            const colors = [
+              {
+                name: "겉감",
+                hex: colorData.color_01,
+                rgb: hexToRgb(colorData.color_01),
+                filter: outerColor,
+                checked: outerChecked,
+                errorRange: outerErrorRange,
+              },
+              {
+                name: "글자",
+                hex: colorData.color_02,
+                rgb: hexToRgb(colorData.color_02),
+                filter: textColor,
+                checked: textChecked,
+                errorRange: textErrorRange,
+              },
+              {
+                name: "안감",
+                hex: colorData.color_03,
+                rgb: hexToRgb(colorData.color_03),
+                filter: innerColor,
+                checked: innerChecked,
+                errorRange: innerErrorRange,
+              },
+            ];
+            const shouldDisplay = colors.every(
+              (color) =>
+                !color.checked ||
+                colorMatch(color.filter, color.rgb, parseInt(color.errorRange))
+            );
 
-              //필터링 한 경우
-              if (shouldDisplay) {
-                return `
+            //필터링 한 경우
+            if (shouldDisplay) {
+              return `
                 <div class="shop_item">
                   <div>
                     <img src="${i.image_url}" alt="${i.item_display_name}">
@@ -189,9 +185,9 @@ function updateDisplay(category = "total") {
                   </div>
                 </div>
             `;
-              }
             }
-            return "";
+            // }
+            // return "";
           })
           .join("")}
         </div>
