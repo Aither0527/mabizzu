@@ -3,17 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>마비쭈색깔보기</title>
+    <title>마비쭈(MAB</title>
     <link href="mabizzu.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
     <div class="navbar">
-      <text>오늘의 아이템 색상</text>
+      <div class="navbar_logo">MABIZZU</div>
+      <div class="navbar_desc">마비노기 주머니 색상 검색기</div>
     </div>
     <div class="search_wrap">
       <div class="param_wrap">
         <div class="param_card">
-          <label for="server-name">서버</label>
+          <label for="server-name" style="margin-left: 0px">서버</label>
           <select class="select_box" id="server-name">
             <option value="류트" selected>류트</option>
             <option value="울프">울프</option>
@@ -23,51 +24,85 @@
         </div>
         <div class="param_card">
           <label for="channel-num">채널</label>
-          <input type="text" id="channel-num" style="width: 2rem" value="1"/>
+          <input
+            type="number"
+            id="channel-num"
+            style="width: 1.5rem;"
+            value="1"
+          />
         </div>
         <div class="param_card">
           <label for="api-key">API 키</label>
-          <input type="text" id="api-key" style="width: 15rem;" />
+          <input type="text" id="api-key" style="width: 15rem" />
+        </div>
+        <div class="param_card">
+          <button id="search-button" type="submit">검색</button>
         </div>
       </div>
 
       <div class="param_wrap">
-        <div class="param_card">
-          <label>겉감</label>
+        <div class="param_color">
+          <label class="label_text">겉감</label>
           <input id="outer-color-picker" type="color" />
           <input
             id="outer-color"
             type="text"
-            class="form-control"
             placeholder="#RRGGBB"
-          />
+          />&nbsp;(&nbsp;
+          <input id="outer-color-r" type="number" value="0" />&nbsp;,&nbsp;
+          <input id="outer-color-g" type="number" value="0" />&nbsp;,&nbsp;
+          <input id="outer-color-b" type="number" value="0" />&nbsp;)
+          <label class="label_text" style="margin-left: 20px">오차 범위</label>
+          <input id="outer-error-range" type="number" value="0" />
+          <label
+            class="label_text"
+            for="outer-check-box"
+            style="margin-left: 20px"
+            >필터링</label
+          >
+          <input type="checkbox" value="filtered" id="outer-check-box" />
         </div>
-        <div class="param_card">
-          <label>글자</label>
+        <div class="param_color">
+          <label class="label_text">글자</label>
           <input id="text-color-picker" type="color" />
-          <input id="text-color" type="text" placeholder="#RRGGBB" />
-        </div>
-        <div class="param_card">
-          <label>안감</label>
-          <input id="inner-color-picker" type="color" />
-          <input id="inner-color" type="text" placeholder="#RRGGBB" />
-        </div>
-        <div class="param_card">
-          <label>오차 범위</label>
           <input
-            value="0"
-            id="error-range"
+            id="text-color"
             type="text"
-            style="width: 1rem"
-            placeholder="0"
-          />
+            placeholder="#RRGGBB"
+          />&nbsp;(&nbsp;
+          <input id="text-color-r" type="number" value="0" />&nbsp;,&nbsp;
+          <input id="text-color-g" type="number" value="0" />&nbsp;,&nbsp;
+          <input id="text-color-b" type="number" value="0" />&nbsp;)
+          <label class="label_text" style="margin-left: 20px">오차 범위</label>
+          <input id="text-error-range" type="number" value="0" />
+          <label
+            class="label_text"
+            for="text-check-box"
+            style="margin-left: 20px"
+            >필터링</label
+          >
+          <input type="checkbox" value="filtered" id="text-check-box" />
         </div>
-        <div class="param_card">
-          <label for="check-box">필터링</label>
-          <input type="checkbox" value="filtered" id="check-box">
-        </div>
-        <div>
-          <button id="search-button" type="submit">검색</button>
+        <div class="param_color">
+          <label class="label_text">안감</label>
+          <input id="inner-color-picker" type="color" />
+          <input
+            id="inner-color"
+            type="text"
+            placeholder="#RRGGBB"
+          />&nbsp;(&nbsp;
+          <input id="inner-color-r" type="number" value="0" />&nbsp;,&nbsp;
+          <input id="inner-color-g" type="number" value="0" />&nbsp;,&nbsp;
+          <input id="inner-color-b" type="number" value="0" />&nbsp;)
+          <label class="label_text" style="margin-left: 20px">오차 범위</label>
+          <input id="inner-error-range" type="number" value="0" />
+          <label
+            class="label_text"
+            for="inner-check-box"
+            style="margin-left: 20px"
+            >필터링</label
+          >
+          <input type="checkbox" value="filtered" id="inner-check-box" />
         </div>
       </div>
     </div>

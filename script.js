@@ -97,11 +97,15 @@ async function searchItems() {
 }
 
 function updateDisplay(category = "total") {
-  let outerColor = document.getElementById("outer-color").value;
-  let textColor = document.getElementById("text-color").value;
-  let innerColor = document.getElementById("inner-color").value;
-  let errorRange = document.getElementById("error-range").value;
-  let filtered = document.getElementById("check-box").checked ? true : false;
+  const outerColor = document.getElementById("outer-color").value;
+  const textColor = document.getElementById("text-color").value;
+  const innerColor = document.getElementById("inner-color").value;
+  const outerErrorRange = document.getElementById("outer-error-range").value;
+  const textErrorRange = document.getElementById("text-error-range").value;
+  const innerErrorRange = document.getElementById("inner-error-range").value;
+  const outerChecked = document.getElementById("outer-check-box").checked;
+  const textChecked = document.getElementById("text-check-box").checked;
+  const innerChecked = document.getElementById("inner-check-box").checked;
   const shopItemsContainer = document.getElementById("shop_items");
   shopItemsContainer.innerHTML = ""; //innerHTML 초기화
   let displayList;
@@ -128,68 +132,66 @@ function updateDisplay(category = "total") {
                 "item_color="
               )[1];
               const colorData = JSON.parse(decodeUrl);
-              const color1 = hexToRgb(colorData.color_01);
-              const color2 = hexToRgb(colorData.color_02);
-              const color3 = hexToRgb(colorData.color_03);
+              const colors = [
+                {
+                  name: "겉감",
+                  hex: colorData.color_01,
+                  rgb: hexToRgb(colorData.color_01),
+                  filter: outerColor,
+                  checked: outerChecked,
+                  errorRange: outerErrorRange,
+                },
+                {
+                  name: "글자",
+                  hex: colorData.color_02,
+                  rgb: hexToRgb(colorData.color_02),
+                  filter: textColor,
+                  checked: textChecked,
+                  errorRange: textErrorRange,
+                },
+                {
+                  name: "안감",
+                  hex: colorData.color_03,
+                  rgb: hexToRgb(colorData.color_03),
+                  filter: innerColor,
+                  checked: innerChecked,
+                  errorRange: innerErrorRange,
+                },
+              ];
+              const shouldDisplay = colors.every(
+                (color) =>
+                  !color.checked ||
+                  colorMatch(
+                    color.filter,
+                    color.rgb,
+                    parseInt(color.errorRange)
+                  )
+              );
+
               //필터링 한 경우
-              if (filtered) {
-                if (
-                  //색상 매치인 경우만 출력
-                  colorMatch(outerColor, color1, errorRange) &&
-                  colorMatch(textColor, color2, errorRange) &&
-                  colorMatch(innerColor, color3, errorRange)
-                ) {
-                  return `
+              if (shouldDisplay) {
+                return `
                 <div class="shop_item">
                   <div>
                     <img src="${i.image_url}" alt="${i.item_display_name}">
                     <div class="item_name">${i.item_display_name}</div>
-                    <div class="item_text_wrap">
-                      <div style="color:${colorData.color_01}">겉감 </div>
-                      <div style="width: 15px; height: 15px; background-color: ${colorData.color_01}"></div>
-                      <div>(${color1.r}, ${color1.g}, ${color1.b})</div>
-                    </div>
-                    <div class="item_text_wrap">
-                      <div style="color:${colorData.color_02}">숫자 </div>
-                      <div style="width: 15px; height: 15px; background-color: ${colorData.color_02}"></div>
-                      <div>(${color2.r}, ${color2.g}, ${color2.b})</div>
-                    </div>
-                    <div class="item_text_wrap">
-                      <div style="color:${colorData.color_03}">안감 </div>
-                      <div style="width: 15px; height: 15px; background-color: ${colorData.color_03}"></div>
-                      <div>(${color3.r}, ${color3.g}, ${color3.b})</div>
-                    </div>
+                    ${colors
+                      .map(
+                        (color) => `
+                      <div class="item_text_wrap">
+                        <div style="color:${color.hex}">${color.name}</div>
+                        <div style="width: 15px; height: 15px; background-color: ${color.hex}"></div>
+                        <div>(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})</div>
+                      </div>
+                    `
+                      )
+                      .join("")}
                   </div>
                 </div>
             `;
-                }
-              } else {
-                //필터링 안 한 경우 전부 출력
-                return `
-              <div class="shop_item">
-                <div>
-                  <img src="${i.image_url}" alt="${i.item_display_name}">
-                  <div class="item_name">${i.item_display_name}</div>
-                  <div class="item_text_wrap">
-                    <div style="color:${colorData.color_01}">겉감 </div>
-                    <div style="width: 15px; height: 15px; background-color: ${colorData.color_01}"></div>
-                    <div>(${color1.r}, ${color1.g}, ${color1.b})</div>
-                  </div>
-                  <div class="item_text_wrap">
-                    <div style="color:${colorData.color_02}">숫자 </div>
-                    <div style="width: 15px; height: 15px; background-color: ${colorData.color_02}"></div>
-                    <div>(${color2.r}, ${color2.g}, ${color2.b})</div>
-                  </div>
-                  <div class="item_text_wrap">
-                    <div style="color:${colorData.color_03}">안감 </div>
-                    <div style="width: 15px; height: 15px; background-color: ${colorData.color_03}"></div>
-                    <div>(${color3.r}, ${color3.g}, ${color3.b})</div>
-                  </div>
-                </div>
-              </div>
-          `;
               }
             }
+            return "";
           })
           .join("")}
         </div>
@@ -256,63 +258,146 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   const outerColorPicker = document.getElementById("outer-color-picker");
-  const textColorPicker = document.getElementById("text-color-picker");
-  const innerColorPicker = document.getElementById("inner-color-picker");
-
+  const outerColorR = document.getElementById("outer-color-r");
+  const outerColorG = document.getElementById("outer-color-g");
+  const outerColorB = document.getElementById("outer-color-b");
   const outerColorInput = document.getElementById("outer-color");
+  const outerErrorRange = document.getElementById("outer-error-range");
+
+  const textColorPicker = document.getElementById("text-color-picker");
+  const textColorR = document.getElementById("text-color-r");
+  const textColorG = document.getElementById("text-color-g");
+  const textColorB = document.getElementById("text-color-b");
   const textColorInput = document.getElementById("text-color");
+  const textErrorRange = document.getElementById("outer-error-range");
+
+  const innerColorPicker = document.getElementById("inner-color-picker");
+  const innerColorR = document.getElementById("inner-color-r");
+  const innerColorG = document.getElementById("inner-color-g");
+  const innerColorB = document.getElementById("inner-color-b");
   const innerColorInput = document.getElementById("inner-color");
+  const innerErrorRange = document.getElementById("outer-error-range");
 
-  //겉감 색상 변경
-  outerColorPicker.addEventListener("input", function () {
-    outerColorInput.value = this.value.toUpperCase();
-  });
-
-  outerColorInput.addEventListener("input", function () {
-    let color = this.value;
-    //'#'이 없으면 추가
+  //컬러 포맷 컴포넌트
+  function formatColor(color) {
     if (color.charAt(0) !== "#") {
       color = "#" + color;
     }
+
     //유효한 색상 형식인지 확인
     if (/^#[0-9A-F]{6}$/i.test(color)) {
-      outerColorPicker.value = color;
+      return color.toUpperCase();
     }
+    return null;
+  }
+
+  //입력 숫자 범위 설정
+  function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+  }
+
+  function updateColor(position) {
+    const elements = {
+      outer: {
+        picker: outerColorPicker,
+        input: outerColorInput,
+        r: outerColorR,
+        g: outerColorG,
+        b: outerColorB,
+      },
+      text: {
+        picker: textColorPicker,
+        input: textColorInput,
+        r: textColorR,
+        g: textColorG,
+        b: textColorB,
+      },
+      inner: {
+        picker: innerColorPicker,
+        input: innerColorInput,
+        r: innerColorR,
+        g: innerColorG,
+        b: innerColorB,
+      },
+    };
+
+    const { picker, input, r, g, b } = elements[position];
+
+    return function (color) {
+      const formattedColor = formatColor(
+        color ||
+          rgbToHex(
+            clamp(parseInt(r.value) || 0, 0, 255),
+            clamp(parseInt(g.value) || 0, 0, 255),
+            clamp(parseInt(b.value) || 0, 0, 255)
+          )
+      );
+
+      if (formattedColor) {
+        const rgb = hexToRgb(formattedColor);
+        picker.value = formattedColor;
+        input.value = formattedColor;
+        r.value = rgb.r;
+        g.value = rgb.g;
+        b.value = rgb.b;
+      }
+    };
+  }
+
+  ["outer", "text", "inner"].forEach((position) => {
+    const elements = {
+      outer: {
+        picker: outerColorPicker,
+        input: outerColorInput,
+        r: outerColorR,
+        g: outerColorG,
+        b: outerColorB,
+        errorRange: outerErrorRange,
+      },
+      text: {
+        picker: textColorPicker,
+        input: textColorInput,
+        r: textColorR,
+        g: textColorG,
+        b: textColorB,
+        errorRange: textErrorRange,
+      },
+      inner: {
+        picker: innerColorPicker,
+        input: innerColorInput,
+        r: innerColorR,
+        g: innerColorG,
+        b: innerColorB,
+        errorRange: innerErrorRange,
+      },
+    };
+
+    const { picker, input, r, g, b, errorRange } = elements[position];
+    const updateColorForPosition = updateColor(position);
+
+    picker.addEventListener("input", function () {
+      updateColorForPosition(this.value);
+    });
+    input.addEventListener("input", function () {
+      updateColorForPosition(this.value);
+    });
+    input.addEventListener("blur", function () {
+      updateColorForPosition(this.value);
+    });
+    errorRange.addEventListener("blur", function () {
+      this.value = clamp(parseInt(this.value) || 0, 0, 255);
+      updateColorForPosition();
+    });
+
+    [(r, g, b)].forEach((input) => {
+      input.addEventListener("input", () => updateColorForPosition());
+      input.addEventListener("blur", function () {
+        this.value = clamp(parseInt(this.value) || 0, 0, 255);
+        updateColorForPosition();
+      });
+    });
   });
 
-  //중간 색상 변경
-  textColorPicker.addEventListener("input", function () {
-    textColorInput.value = this.value.toUpperCase();
-  });
-
-  textColorInput.addEventListener("input", function () {
-    let color = this.value;
-    //'#'이 없으면 추가
-    if (color.charAt(0) !== "#") {
-      color = "#" + color;
-    }
-    //유효한 색상 형식인지 확인
-    if (/^#[0-9A-F]{6}$/i.test(color)) {
-      textColorPicker.value = color;
-    }
-  });
-
-  //안감 색상 변경
-  innerColorPicker.addEventListener("input", function () {
-    innerColorInput.value = this.value.toUpperCase();
-  });
-
-  innerColorInput.addEventListener("input", function () {
-    let color = this.value;
-    //'#'이 없으면 추가
-    if (color.charAt(0) !== "#") {
-      color = "#" + color;
-    }
-    //유효한 색상 형식인지 확인
-    if (/^#[0-9A-F]{6}$/i.test(color)) {
-      innerColorPicker.value = color;
-    }
-  });
   outerColorInput.value = outerColorPicker.value.toUpperCase();
   textColorInput.value = textColorPicker.value.toUpperCase();
   innerColorInput.value = innerColorPicker.value.toUpperCase();
@@ -335,18 +420,21 @@ function toUpdateTime() {
   }
 }
 
+//색상 포맷 변경
 function hexToRgb(hex) {
-  hex = hex.toString().replace(/^#/, "");
-
   const rgb = {
-    r: parseInt(hex.slice(0, 2), 16),
-    g: parseInt(hex.slice(2, 4), 16),
-    b: parseInt(hex.slice(4, 6), 16),
+    r: parseInt(hex.slice(1, 3), 16),
+    g: parseInt(hex.slice(3, 5), 16),
+    b: parseInt(hex.slice(5, 7), 16),
   };
-
   return rgb;
 }
 
+function rgbToHex(r, g, b) {
+  return "#" + [r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("");
+}
+
+//필터링
 function colorMatch(targetColor, itemColor, errorRange) {
   const targetRGB = hexToRgb(targetColor);
   const itemRGB = itemColor;
