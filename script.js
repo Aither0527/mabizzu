@@ -293,6 +293,10 @@ function updateButtonState() {
   const minutesDiff = Math.floor(timeDiff / (1000 * 60));
   const secondsDiff = Math.floor((timeDiff % (1000 * 60)) / 1000);
 
+  if (oldNextUpdate === nextUpdate) {
+    nextUpdate = "";
+  }
+
   if (!canSearch()) {
     searchBtn.disabled = true;
     searchBtn.textContent = `${minutesDiff}:${secondsDiff
