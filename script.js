@@ -105,6 +105,7 @@ async function searchItems() {
       }
       const data = await response.json();
       nextUpdate = data.date_shop_next_update;
+      console.log(nextUpdate);
       if (oldNextUpdate != nextUpdate) {
         localStorage.setItem("nextUpdate", nextUpdate);
       }
@@ -146,15 +147,15 @@ async function searchItems() {
 
 //화면 업데이트
 function updateDisplay() {
-  const outerColor = document.getElementById("outer-color").value;
-  const textColor = document.getElementById("text-color").value;
-  const innerColor = document.getElementById("inner-color").value;
-  const outerErrorRange = document.getElementById("outer-error-range").value;
-  const textErrorRange = document.getElementById("text-error-range").value;
-  const innerErrorRange = document.getElementById("inner-error-range").value;
-  const outerChecked = document.getElementById("outer-check-box").checked;
-  const textChecked = document.getElementById("text-check-box").checked;
-  const innerChecked = document.getElementById("inner-check-box").checked;
+  // const outerColor = document.getElementById("outer-color").value;
+  // const textColor = document.getElementById("text-color").value;
+  // const innerColor = document.getElementById("inner-color").value;
+  // const outerErrorRange = document.getElementById("outer-error-range").value;
+  // const textErrorRange = document.getElementById("text-error-range").value;
+  // const innerErrorRange = document.getElementById("inner-error-range").value;
+  // const outerChecked = document.getElementById("outer-check-box").checked;
+  // const textChecked = document.getElementById("text-check-box").checked;
+  // const innerChecked = document.getElementById("inner-check-box").checked;
   const shopItemsContainer = document.getElementById("shop_items");
 
   shopItemsContainer.innerHTML = ""; //innerHTML 초기화
@@ -165,41 +166,42 @@ function updateDisplay() {
         ? Object.values(item.categories).flat()
         : item.categories[currentCategory] || [];
 
-    const filteredItems = categoryItems.filter((i) => {
-      let decodeUrl = decodeURIComponent(i.image_url).split("item_color=")[1];
-      const colorData = JSON.parse(decodeUrl);
-      const colors = [
-        {
-          name: "겉감",
-          hex: colorData.color_01,
-          rgb: hexToRgb(colorData.color_01),
-          filter: outerColor,
-          checked: outerChecked,
-          errorRange: outerErrorRange,
-        },
-        {
-          name: "글자",
-          hex: colorData.color_02,
-          rgb: hexToRgb(colorData.color_02),
-          filter: textColor,
-          checked: textChecked,
-          errorRange: textErrorRange,
-        },
-        {
-          name: "안감",
-          hex: colorData.color_03,
-          rgb: hexToRgb(colorData.color_03),
-          filter: innerColor,
-          checked: innerChecked,
-          errorRange: innerErrorRange,
-        },
-      ];
-      return colors.every(
-        (color) =>
-          !color.checked ||
-          colorMatch(color.filter, color.rgb, parseInt(color.errorRange))
-      );
-    });
+        const filteredItems = categoryItems;
+    // const filteredItems = categoryItems.filter((i) => {
+    //   let decodeUrl = decodeURIComponent(i.image_url).split("item_color=")[1];
+    //   const colorData = JSON.parse(decodeUrl);
+    //   const colors = [
+    //     {
+    //       name: "겉감",
+    //       hex: colorData.color_01,
+    //       rgb: hexToRgb(colorData.color_01),
+    //       filter: outerColor,
+    //       checked: outerChecked,
+    //       errorRange: outerErrorRange,
+    //     },
+    //     {
+    //       name: "글자",
+    //       hex: colorData.color_02,
+    //       rgb: hexToRgb(colorData.color_02),
+    //       filter: textColor,
+    //       checked: textChecked,
+    //       errorRange: textErrorRange,
+    //     },
+    //     {
+    //       name: "안감",
+    //       hex: colorData.color_03,
+    //       rgb: hexToRgb(colorData.color_03),
+    //       filter: innerColor,
+    //       checked: innerChecked,
+    //       errorRange: innerErrorRange,
+    //     },
+    //   ];
+    //   return colors.every(
+    //     (color) =>
+    //       !color.checked ||
+    //       colorMatch(color.filter, color.rgb, parseInt(color.errorRange))
+    //   );
+    // });
 
     if (filteredItems.length > 0) {
       const npcInfo = document.createElement("div");
@@ -214,40 +216,6 @@ function updateDisplay() {
                 <div>
                   <img src="${i.image_url}" alt="${i.item_display_name}">
                   <div class="item_name">${i.item_display_name}</div>
-                  ${[
-                    {
-                      name: "겉감",
-                      hex: JSON.parse(
-                        decodeURIComponent(i.image_url).split("item_color=")[1]
-                      ).color_01,
-                    },
-                    {
-                      name: "글자",
-                      hex: JSON.parse(
-                        decodeURIComponent(i.image_url).split("item_color=")[1]
-                      ).color_02,
-                    },
-                    {
-                      name: "안감",
-                      hex: JSON.parse(
-                        decodeURIComponent(i.image_url).split("item_color=")[1]
-                      ).color_03,
-                    },
-                  ]
-                    .map(
-                      (color) => `
-                    <div class="item_text_wrap">
-                      <div style="color:${color.hex}">${color.name}</div>
-                      <div style="width: 15px; height: 15px; background-color: ${
-                        color.hex
-                      }"></div>
-                      <div>(${hexToRgb(color.hex).r}, ${
-                        hexToRgb(color.hex).g
-                      }, ${hexToRgb(color.hex).b})</div>
-                    </div>
-                  `
-                    )
-                    .join("")}
                 </div>
               </div>
             `
@@ -373,26 +341,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  const outerColorPicker = document.getElementById("outer-color-picker");
-  const outerColorR = document.getElementById("outer-color-r");
-  const outerColorG = document.getElementById("outer-color-g");
-  const outerColorB = document.getElementById("outer-color-b");
-  const outerColorInput = document.getElementById("outer-color");
-  const outerErrorRange = document.getElementById("outer-error-range");
+  // const outerColorPicker = document.getElementById("outer-color-picker");
+  // const outerColorR = document.getElementById("outer-color-r");
+  // const outerColorG = document.getElementById("outer-color-g");
+  // const outerColorB = document.getElementById("outer-color-b");
+  // const outerColorInput = document.getElementById("outer-color");
+  // const outerErrorRange = document.getElementById("outer-error-range");
 
-  const textColorPicker = document.getElementById("text-color-picker");
-  const textColorR = document.getElementById("text-color-r");
-  const textColorG = document.getElementById("text-color-g");
-  const textColorB = document.getElementById("text-color-b");
-  const textColorInput = document.getElementById("text-color");
-  const textErrorRange = document.getElementById("outer-error-range");
+  // const textColorPicker = document.getElementById("text-color-picker");
+  // const textColorR = document.getElementById("text-color-r");
+  // const textColorG = document.getElementById("text-color-g");
+  // const textColorB = document.getElementById("text-color-b");
+  // const textColorInput = document.getElementById("text-color");
+  // const textErrorRange = document.getElementById("outer-error-range");
 
-  const innerColorPicker = document.getElementById("inner-color-picker");
-  const innerColorR = document.getElementById("inner-color-r");
-  const innerColorG = document.getElementById("inner-color-g");
-  const innerColorB = document.getElementById("inner-color-b");
-  const innerColorInput = document.getElementById("inner-color");
-  const innerErrorRange = document.getElementById("outer-error-range");
+  // const innerColorPicker = document.getElementById("inner-color-picker");
+  // const innerColorR = document.getElementById("inner-color-r");
+  // const innerColorG = document.getElementById("inner-color-g");
+  // const innerColorB = document.getElementById("inner-color-b");
+  // const innerColorInput = document.getElementById("inner-color");
+  // const innerErrorRange = document.getElementById("outer-error-range");
 
   //컬러 포맷 컴포넌트
   function formatColor(color) {
